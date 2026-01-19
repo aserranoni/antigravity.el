@@ -42,6 +42,7 @@
     (kill-buffer buffer)
     (message "Agent killed: %s" (buffer-name buffer))))
 
+;;;###autoload
 (defun antigravity-spawn-architect ()
   "Spawn a new Architect agent (High reasoning model)."
   (interactive)
@@ -51,6 +52,7 @@
       (goto-char (point-max))
       (insert "\n\n**System**: You are the Architect. Analyze the problem and provide a high-level solution.\n\n"))))
 
+;;;###autoload
 (defun antigravity-spawn-gemini-cli ()
   "Spawn Gemini CLI in a terminal buffer."
   (interactive)
@@ -70,7 +72,8 @@
          (mapconcat (lambda (b) (format "    - %s" (buffer-name b))) coders "\n")
        "    (none)"))))
 
-(define-transient-command antigravity-manager-menu ()
+;;;###autoload
+(transient-define-prefix antigravity-manager-menu ()
   "Antigravity Agent Manager Mission Control."
   ["Antigravity Mission Control"
    ["Active Agents"
@@ -82,18 +85,20 @@
     ("A" "Spawn Architect" antigravity-spawn-architect)
     ("k" "Kill Agent" antigravity-kill-agent-menu)]])
 
-(define-transient-command antigravity-kill-agent-menu ()
+(transient-define-prefix antigravity-kill-agent-menu ()
   "Select an agent to kill."
-  :setup-children (lambda (_)
-                    (let ((buffers (append (antigravity--list-gptel-buffers)
-                                           (antigravity--list-aider-sessions))))
-                      (transient-parse-suffixes 
-                       'antigravity-kill-agent-menu
-                       (mapcar (lambda (b)
-                                 (list (buffer-name b)
-                                       (buffer-name b)
-                                       `(lambda () (interactive) (antigravity-kill-agent ,b))))
-                               buffers)))))
+  ["Select Agent"
+   :class transient-columns
+   :setup-children (lambda (_)
+                     (let ((buffers (append (antigravity--list-gptel-buffers)
+                                            (antigravity--list-aider-sessions))))
+                       (transient-parse-suffixes 
+                        'antigravity-kill-agent-menu
+                        (mapcar (lambda (b)
+                                  (list (buffer-name b)
+                                        (buffer-name b)
+                                        `(lambda () (interactive) (antigravity-kill-agent ,b))))
+                                buffers))))])
 
 ;;; Auth Utils
 
@@ -107,6 +112,7 @@
 
 ;;; Doctor
 
+;;;###autoload
 (defun antigravity-doctor ()
   "Check Antigravity dependencies."
   (interactive)
