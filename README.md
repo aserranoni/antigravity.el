@@ -23,8 +23,9 @@ Add this to your `config.el`:
   :config
   (map! :leader
         (:prefix ("a" . "antigravity")
-         :desc "Mission Control" "m" #'antigravity-manager-menu
-         :desc "Antigravity (Aider)" "a" #'aidermacs-transient-menu
-         :desc "Antigravity Chat" "c" #'gptel
-         :desc "Gemini CLI" "C" #'antigravity-spawn-gemini-cli)))
+         :desc "Antigravity Menu" "m" #'antigravity-manager-menu
+         :desc "Mission Control"  "M" #'antigravity-mission-control
+         :desc "Spawn Agent"      "a" #'antigravity-spawn-aider
+         :desc "Spawn Architect"  "A" #'antigravity-spawn-architect
+         :desc "Spawn Chat"       "c" #'antigravity-spawn-gptel)))
 ```
