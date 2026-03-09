@@ -36,6 +36,7 @@
                ((eq package 'gptel) :chat)
                ((eq package 'aidermacs) :agent)
                ((eq package 'claude-code) :agent)
+               ((memq package '(gemini llama-cpp)) :cli)
                (t :chat))))
     (list :buffer buffer
           :package package
@@ -66,6 +67,11 @@
 (defun antigravity--list-claude-code-buffers ()
   (when (featurep 'claude-code)
     (seq-filter (lambda (b) (string-match-p "^\\*claude-code" (buffer-name b))) (buffer-list))))
+
+(defun antigravity--list-cli-agent-buffers ()
+  "List active CLI agent buffers spawned by Antigravity."
+  (seq-filter (lambda (b) (with-current-buffer b (bound-and-true-p antigravity-cli-agent-p)))
+              (buffer-list)))
 
 (defun antigravity--get-gptel-model (buffer)
   (with-current-buffer buffer
@@ -114,7 +120,14 @@
                                    (antigravity--get-aider-project buf))))
   (dolist (buf (antigravity--list-claude-code-buffers))
     (unless (gethash (buffer-name buf) antigravity--agents)
-      (antigravity--register-agent buf 'claude-code "claude" nil))))
+      (antigravity--register-agent buf 'claude-code "claude" nil)))
+  (dolist (buf (antigravity--list-cli-agent-buffers))
+    (unless (gethash (buffer-name buf) antigravity--agents)
+      (with-current-buffer buf
+        (antigravity--register-agent buf
+                                     (or (bound-and-true-p antigravity-cli-package) 'cli)
+                                     (or (bound-and-true-p antigravity-cli-model) "unknown")
+                                     (antigravity--detect-project buf))))))
 
 (with-eval-after-load 'gptel
   (add-hook 'gptel-mode-hook #'antigravity--register-gptel-buffer))
@@ -173,20 +186,45 @@
 (defun antigravity-spawn-gemini-cli ()
   "Spawn Gemini CLI."
   (interactive)
-  (eat "gemini chat" t))
+  (let ((buf-name "*Antigravity: Gemini CLI*"))
+    (eat "gemini chat" t buf-name)
+    (with-current-buffer buf-name
+      (setq-local antigravity-cli-agent-p t)
+      (setq-local antigravity-cli-package 'gemini)
+      (setq-local antigravity-cli-model "gemini-cli")
+      (antigravity--register-agent (current-buffer) 'gemini "gemini-cli" nil))))
 
 ;;;###autoload
-(defun antigravity-spawn-architect ()
-  "Spawn Architect Agent."
+(defun antigravity-spawn-llama-chat ()
+  "Spawn GPTel using a local Llama.cpp server on port 9000."
   (interactive)
   (let* ((default-directory (antigravity--select-project))
          (project-name (file-name-nondirectory (directory-file-name default-directory)))
-         (buf-name (format "*Antigravity: Architect (%s)*" project-name)))
+         (buf-name (format "*Antigravity: Llama Chat (%s)*" project-name))
+         (llama-backend (gptel-make-openai "LlamaCPP"
+                          :stream t
+                          :protocol "http"
+                          :host "localhost:9000"
+                          :endpoint "/v1/chat/completions"
+                          :models '("default"))))
     (gptel buf-name)
     (with-current-buffer buf-name
-      (setq-local gptel-model 'gemini-2.0-flash-thinking-exp)
-      (goto-char (point-max))
-      (insert "\n\n**System**: You are the Architect. Analyze the problem and provide a high-level solution.\n\n"))))
+      (setq-local gptel-backend llama-backend)
+      (setq-local gptel-model "default"))))
+
+;;;###autoload
+(defun antigravity-spawn-llama-coder ()
+  "Spawn Aidermacs using a local Llama.cpp server on port 9000."
+  (interactive)
+  (let ((default-directory (antigravity--select-project)))
+    (dlet ((aidermacs-args '("--openai-api-base" "http://localhost:9000/v1" "--model" "openai/default"))
+           (aidermacs-default-model "openai/default"))
+      (cond
+       ((fboundp 'aidermacs-run-in-current-dir)
+        (aidermacs-run-in-current-dir))
+       ((fboundp 'aidermacs-run)
+        (aidermacs-run))
+       (t (message "Aidermacs not loaded"))))))
 
 ;;; Auth Utils
 

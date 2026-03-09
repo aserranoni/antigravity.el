@@ -52,6 +52,8 @@
     (define-key map (kbd "s") 'antigravity-spawn-gptel)
     (define-key map (kbd "a") 'antigravity-spawn-aider)
     (define-key map (kbd "c") 'antigravity-spawn-gemini-cli)
+    (define-key map (kbd "l") 'antigravity-spawn-llama-chat)
+    (define-key map (kbd "L") 'antigravity-spawn-llama-coder)
     (define-key map (kbd "A") 'antigravity-spawn-architect)
     (define-key map (kbd "q") 'quit-window)
     map))
@@ -100,6 +102,8 @@
    ("c" "Chat (GPTel)" antigravity-spawn-gptel)
    ("a" "Coder (Aider)" antigravity-spawn-aider)
    ("A" "Architect" antigravity-spawn-architect)
+   ("l" "Llama Chat" antigravity-spawn-llama-chat)
+   ("L" "Llama Coder" antigravity-spawn-llama-coder)
    ("C" "Gemini CLI" antigravity-spawn-gemini-cli)])
 
 (provide 'antigravity-ui)

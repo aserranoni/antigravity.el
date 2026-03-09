@@ -4,6 +4,7 @@ Antigravity is an agentic AI coding environment for Emacs. It integrates:
 - **Aidermacs**: For heavy-lifting coding tasks and git operations.
 - **GPTel**: For versatile chat interactions.
 - **Gemini CLI**: For direct subscription access.
+- **Llama CPP**: For local AI agent integration via `localhost:9000`.
 
 ## Installation
 
@@ -27,5 +28,7 @@ Add this to your `config.el`:
          :desc "Mission Control"  "M" #'antigravity-mission-control
          :desc "Spawn Agent"      "a" #'antigravity-spawn-aider
          :desc "Spawn Architect"  "A" #'antigravity-spawn-architect
-         :desc "Spawn Chat"       "c" #'antigravity-spawn-gptel)))
+         :desc "Spawn Chat"       "c" #'antigravity-spawn-gptel
+         :desc "Spawn Llama Chat" "l" #'antigravity-spawn-llama-chat
+         :desc "Spawn Llama Coder" "L" #'antigravity-spawn-llama-coder)))
 ```
